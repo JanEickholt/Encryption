@@ -17,7 +17,6 @@ public class Contact {
     static ArrayList<Contact> sorted_contacts;
 
     public void createContact(int y_level, String name, String profile_picture_url) throws IOException {
-        /* used to create a player */
         Contact contact = new Contact();
         contact.name = name;
         contact.y_level = y_level;
@@ -57,7 +56,7 @@ public class Contact {
         }
     }
 
-    BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws IOException {
+    BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
         BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = resizedImage.createGraphics();
         graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);

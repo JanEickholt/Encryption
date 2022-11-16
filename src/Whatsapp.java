@@ -7,36 +7,32 @@ import org.jsoup.select.Elements;
 import org.jsoup.Jsoup;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 public class Whatsapp extends JFrame {
     static Contact contact = new Contact();
     public static int width = 1500;
-    public static int height = 1000;
-    public Whatsapp() throws IOException {
-        UI ui = new UI();
+    public static int height = 1050;
+    public Whatsapp() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setFont(new Font("Roboto", Font.PLAIN, 20));
         setTitle("Whatsapp illegal thing");
         setIconImage(new ImageIcon("src/images/icon.png").getImage());
-        setContentPane(ui.content_pane);
+        setContentPane(UI.content_pane);
         setResizable(false);
-        setBounds(300, 50, width, height);
+        setBounds(250, 5, width, height);
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Whatsapp frame = new Whatsapp();
+        UI ui = new UI();
         frame.setVisible(true);
 
         System.setProperty("webdriver.gecko.driver", "./assets/geckodriver.exe");
@@ -61,9 +57,9 @@ public class Whatsapp extends JFrame {
         }
 
         WebElement webElement = driver.findElement(By.xpath("/html/body/div[1]/div/div/div[3]/div[1]/div/div[2]/div/canvas"));
-        File scrFile = ((TakesScreenshot) webElement).getScreenshotAs(OutputType.FILE);
+        File scrFile = webElement.getScreenshotAs(OutputType.FILE);
         byte [] bytes = FileUtils.readFileToByteArray(scrFile);
-        UI.changeToMainScreen(bytes);
+        ui.changeToMainScreen(bytes);
 
         boolean is_logged_in = false;
         while (!is_logged_in) {
@@ -79,12 +75,11 @@ public class Whatsapp extends JFrame {
             }
         }
         synchronized (driver) {
-            driver.wait(1000);
+            driver.wait(1500);
         }
         getContacts(driver);
-        UI.changeToContactsScreen(Contact.sorted_contacts);
+        ui.changeToContactsScreen(Contact.sorted_contacts);
     }
-
 
     public static void clickOnChat(FirefoxDriver driver, String chatName) {
         Document doc = Jsoup.parse(driver.getPageSource());
@@ -109,7 +104,7 @@ public class Whatsapp extends JFrame {
         Document doc = Jsoup.parse(driver.getPageSource());
         Elements first = doc.getElementsByClass("_1-lf9 _3mSPV _18q-J");
         for (Element element: first) {
-
+            assert element.parent() != null;
             if (element.parent().className().equals("_1-FMR message-out focusable-list-item")) {
                 System.out.println("me");
                 System.out.println("out");
