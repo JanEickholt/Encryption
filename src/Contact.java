@@ -13,6 +13,7 @@ public class Contact {
     String name;
     String profile_picture_url;
     ImageIcon profile_picture = null;
+    static ArrayList<Integer> y_levels = new ArrayList<>();
     static ArrayList<Contact> contacts = new ArrayList <> ();
     static ArrayList<Contact> sorted_contacts;
 
@@ -37,18 +38,36 @@ public class Contact {
         sort_contacts();
     }
 
+    public static boolean in_array(int filter, ArrayList<Integer> array){
+        for(int element: array){
+            if(element == filter){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void sort_contacts() {
         sorted_contacts = new ArrayList<>();
+        y_levels = new ArrayList<>();
         for (Contact contact : contacts) {
             if (sorted_contacts.size() == 0) {
                 sorted_contacts.add(contact);
+                y_levels.add(contact.y_level);
             } else {
                 for (int i = 0; i < sorted_contacts.size(); i++) {
+                    System.out.println(contact.y_level);
+                    if(in_array(contact.y_level, y_levels)){
+                        System.out.println(y_levels);
+                        break;
+                    }
                     if (contact.y_level < sorted_contacts.get(i).y_level) {
                         sorted_contacts.add(i, contact);
+                        y_levels.add(contact.y_level);
                         break;
                     } else if (i == sorted_contacts.size() - 1) {
                         sorted_contacts.add(contact);
+                        y_levels.add(contact.y_level);
                         break;
                     }
                 }

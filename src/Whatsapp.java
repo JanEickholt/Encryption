@@ -5,9 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.jsoup.Jsoup;
-import org.openqa.selenium.By;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
@@ -15,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Whatsapp extends JFrame {
     static Contact contact = new Contact();
@@ -38,7 +37,7 @@ public class Whatsapp extends JFrame {
         System.setProperty("webdriver.gecko.driver", "./assets/geckodriver.exe");
         FirefoxOptions options = new FirefoxOptions();
         options.setBinary("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
-        options.setHeadless(true);
+        //options.setHeadless(true);
         FirefoxDriver driver = new FirefoxDriver(options);
         driver.get("https://web.whatsapp.com/");
         driver.manage().window().maximize();
@@ -124,38 +123,76 @@ public class Whatsapp extends JFrame {
             }
         }
     }
-    public static void getContacts(FirefoxDriver driver) throws IOException {
+
+    public static boolean in_array(int filter, ArrayList<Integer> array){
+        for(int element: array){
+            if(element == filter){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void getContacts(FirefoxDriver driver) throws IOException, InterruptedException {
         // TODO parse something to identify chat - possibility to click & fetch
         // TODO scroll
 
-        Document doc = Jsoup.parse(driver.getPageSource());
+
         System.out.println("started");
 
-        Elements first = doc.getElementsByClass("lhggkp7q ln8gz9je rx9719la");
-        for (Element element: first) {
-            int y_level;
-            String name = null;
-            String profile_picture_url = null;
+        WebElement div_to_scroll = driver.findElement(By.xpath("//*[@id=\"pane-side\"]"));
 
-            y_level = Integer.parseInt(element.attr("style").split("(translateY)")[1].replace("(", "").replace(")", "").replace(";", "").replace("px", ""));
+        ArrayList<Integer> y_levels = new ArrayList<>();
+        boolean y_change = true;
+        int y_array_size = 0;
+        int y_array_last_size;
+        int i = 0;
 
-            for (Element child: element.children()) {
-                Elements images_elements = child.getElementsByClass("_3GlyB");
-                for (Element element2: images_elements) {
-                    for (Element child_element: element2.children()) {
-                        if (!child_element.attr("src").equals("")) {
-                            profile_picture_url = child_element.attr("src");
+        while(y_change){
+            synchronized (driver){
+                driver.wait(10);
+            }
+            i++;
+            div_to_scroll.sendKeys(Keys.DOWN);
+            if(i%10 == 0) {
+                Document doc = Jsoup.parse(driver.getPageSource());
+                Elements first = doc.getElementsByClass("lhggkp7q ln8gz9je rx9719la");
+                for (Element element: first) {
+                    int y_level;
+                    String name = null;
+                    String profile_picture_url = null;
+
+                    y_level = Integer.parseInt(element.attr("style").split("(translateY)")[1].replace("(", "").replace(")", "").replace(";", "").replace("px", ""));
+
+                    if(!in_array(y_level, y_levels)){
+                        y_levels.add(y_level);
+                    }
+
+                    for (Element child: element.children()) {
+                        Elements images_elements = child.getElementsByClass("_3GlyB");
+                        for (Element element2: images_elements) {
+                            for (Element child_element: element2.children()) {
+                                if (!child_element.attr("src").equals("")) {
+                                    profile_picture_url = child_element.attr("src");
+                                    break;
+                                }
+                            }
+                        }
+
+                        for (Element el: child.getElementsByClass("ggj6brxn gfz4du6o r7fjleex g0rxnol2 lhj4utae le5p0ye3 l7jjieqr i0jNr")) {
+                            name = el.attr("title");
+                            System.out.println(name);
                             break;
                         }
                     }
-                }
-
-                for (Element el: child.getElementsByClass("ggj6brxn gfz4du6o r7fjleex g0rxnol2 lhj4utae le5p0ye3 l7jjieqr i0jNr")) {
-                    name = el.attr("title");
-                    break;
+                    contact.createContact(y_level, name, profile_picture_url);
+                    }
+                y_array_last_size = y_array_size;
+                y_array_size = y_levels.size();
+                if(y_array_size == y_array_last_size){
+                    y_change = false;
                 }
             }
-            contact.createContact(y_level, name, profile_picture_url);
         }
     }
 
